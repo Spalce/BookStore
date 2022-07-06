@@ -1,0 +1,22 @@
+﻿<div class="col-12">
+    <button type="button" @onclick="@(() => _navigationManager.NavigateTo(@Cancel))" class="btn btn-outline-secondary">
+        <i class="fa fa-arrow-circle-left"></i> Cancel
+    </button>
+    @if (ShowSubmit)
+    {
+        <button type="submit" class="btn btn-outline-success float-right">
+            @Caption <i class="fa fa-arrow-circle-right"></i>
+        </button>
+    }
+</div>
+
+@code{
+    [Parameter]
+    public bool ShowSubmit { get; set; }
+
+    [Parameter]
+    public string Caption { get; set; }
+    
+    [Parameter]
+    public string Cancel { get; set; }
+}

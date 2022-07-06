@@ -1,0 +1,31 @@
+﻿@Validation
+@Label
+<div class="input-group form-group">
+    @Control
+    @if (ShowIcon)
+    {
+        <div class="input-group-append">
+            <div class="input-group-text">
+                <span class="fas fa-@Icon"></span>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public bool ShowIcon { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; } = "user";
+
+    [Parameter]
+    public RenderFragment Control { get; set; }
+
+    [Parameter]
+    public RenderFragment Validation { get; set; }
+    
+    [Parameter]
+    public RenderFragment Label { get; set; }
+}

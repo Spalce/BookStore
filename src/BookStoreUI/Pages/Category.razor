@@ -1,0 +1,181 @@
+﻿@page "/categories"
+
+<Microsoft.AspNetCore.Components.Web.PageTitle>Categories</Microsoft.AspNetCore.Components.Web.PageTitle>
+
+<PageComponent Title="Categories List">
+    <Content>
+        <SfGrid DataSource="@Categories" @ref="Grid"
+            Toolbar="@(new object[] {"Add", "Edit", "Delete", "Update", "Cancel", new ToolbarItem() { Type = ItemType.Input, Template = LoadTitle, Align = ItemAlign.Right }})"
+            AllowFiltering="true"
+            AllowGrouping="true"
+            AllowSorting="true"
+            RowHeight="40"
+            AllowTextWrap="true"
+            ShowColumnChooser="true"
+            AllowReordering="true"
+            ShowColumnMenu="true"
+            ContextMenuItems="@_context"
+            EnablePersistence="true"
+            AllowPaging="true"
+        >
+            <GridPageSettings PageSize="20" PageCount="20" PageSizes="true"></GridPageSettings>
+            <GridEvents OnActionBegin="OnBegin" TValue="BookStore.Core.Models.Category"></GridEvents>
+            <GridGroupSettings ShowGroupedColumn="true"></GridGroupSettings>
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.CheckBox"></GridFilterSettings>
+            <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Dialog" Dialog="_dialogParams" ShowDeleteConfirmDialog="true">
+                <HeaderTemplate>
+                    @{
+                        var text = GetHeader((context as BookStore.Core.Models.Category));
+                        <span>
+                            <i class="fa fa-@Icon"></i> @text
+                        </span>
+                    }
+                </HeaderTemplate>
+                <Template>
+                    @{
+                        var mode = (context as BookStore.Core.Models.Category);
+                    }
+                    <div class="row">
+                        <GenericField>
+                            <Control>
+                                <SfTextBox @bind-Value="mode!.Name" CssClass="form-control" Placeholder="Name"/>
+                            </Control>
+                            <Validation>
+                                <ValidationMessage For="@(() => mode!.Name)"/>
+                            </Validation>
+                        </GenericField>
+
+                        <GenericField>
+                        <Control>
+                            <SfTextBox @bind-Value="mode!.Description" HtmlAttributes="@(new Dictionary<string, object>() {{"rows", "5"}})" Multiline="true" Placeholder="Description"/>
+                        </Control>
+                        <Validation>
+                            <ValidationMessage For="@(() => mode!.Description)"/>
+                        </Validation>
+                    </GenericField>
+                    </div>
+                </Template>
+                <FooterTemplate>
+                    <SfButton OnClick="@Cancel"
+                              IconCss="fa fa-arrow-circle-left"
+                              CssClass="e-secondary e-outline"
+                              IconPosition="@IconPosition.Left">
+                        Cancel
+                    </SfButton>
+                    <SfButton OnClick="@Save"
+                              IconCss="fa fa-arrow-circle-right"
+                              CssClass="e-success e-outline"
+                              IsPrimary="true"
+                              IconPosition="@IconPosition.Right">
+                        @ButtonText
+                    </SfButton>
+                </FooterTemplate>
+            </GridEditSettings>
+            <GridColumns>
+                <GridColumn Field=@nameof(BookStore.Core.Models.Category.Id) IsIdentity="true" IsPrimaryKey="true" HeaderText="ID" ShowInColumnChooser="true" Visible="false"></GridColumn>
+                <GridColumn Field=@nameof(BookStore.Core.Models.Category.Name) HeaderText="Name" EditType="EditType.DefaultEdit"></GridColumn>
+                <GridColumn Field=@nameof(BookStore.Core.Models.Category.Description) HeaderText="Description" EditType="EditType.DefaultEdit"></GridColumn>
+    
+                <GridColumn HeaderText="Actions" AllowFiltering="false" AllowSorting="false" Width="160">
+                    <GridCommandColumns>
+                        <GridCommandColumn Type=CommandButtonType.Edit
+                                           ButtonOption="@(new CommandButtonOptions() {CssClass = "e-primary e-outline", IconCss = "fa fa-edit", IconPosition = @IconPosition.Left})">
+                        </GridCommandColumn>
+    
+                        <GridCommandColumn Type=CommandButtonType.Delete
+                                           ButtonOption="@(new CommandButtonOptions() {CssClass = "e-danger e-outline", IconCss = "fa fa-trash", IconPosition = @IconPosition.Left})">
+                        </GridCommandColumn>
+                    </GridCommandColumns>
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </Content>
+</PageComponent>
+
+@code{
+    private string? Icon { get; set; }
+    private string? ButtonText { get; set; }
+    private List<BookStore.Core.Models.Category>? Categories { get; set; }
+
+    private static readonly RenderFragment LoadTitle = @<SearchTextComponent TItem="BookStore.Core.Models.Category"></SearchTextComponent>;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await GetList();
+    }
+
+    private async Task GetList()
+    {
+        Categories = await _httpClient.GetFromJsonAsync<List<BookStore.Core.Models.Category>>("categories");
+    }
+
+    private async Task OnBegin(ActionEventArgs<BookStore.Core.Models.Category> args)
+    {
+        switch (args.RequestType)
+        {
+            case Syncfusion.Blazor.Grids.Action.Save:
+                {
+                    args.Cancel = true; // prevent default action.
+                    if (args.Data.Id == 0)
+                    {
+                        await _httpClient.PostAsJsonAsync("categories", args.Data);
+                    }
+                    else
+                    {
+                        await _httpClient.PutAsJsonAsync($"categories/{args.Data.Id.ToString()}", args.Data);
+                    }
+
+                    await GetList();
+                    break;
+                }
+            case Syncfusion.Blazor.Grids.Action.Delete:
+                {
+                    await _httpClient.DeleteAsync($"categories/{args.Data.Id.ToString()}");
+                    await GetList();
+                    break;
+                }
+        }
+    }
+
+     private SfGrid<BookStore.Core.Models.Category> Grid { get; set; }
+    //Context menu items
+    private readonly List<object> _context = new List<object>()
+    {
+        "AutoFit", "AutoFitAll", "SortAscending", "SortDescending", "Edit", "Copy", "Delete", "Group", "Ungroup", "", "ExcelExport", "PdfExport", "CsvExport", "FirstPage", "PrevPage", "NextPage", "LastPage"
+    };
+
+    private readonly DialogSettings _dialogParams = new DialogSettings
+    {
+        Width = "450px",
+        AllowDragging = true,
+        EnableResize = true,
+        //Height = "550px"
+    };
+
+    private string GetHeader(BookStore.Core.Models.Category value)
+    {
+        if (value.Id == 0)
+        {
+            ButtonText = "Insert";
+            Icon = "paper-plane";
+            return "Add New Category";
+        }
+        else
+        {
+            ButtonText = "Update";
+            Icon = "edit";
+            return "Edit " + value.Name;
+        }
+    }
+    
+    private async Task Cancel()
+    {
+        await Grid.CloseEditAsync(); //Cancel editing action
+    }
+
+    private async Task Save()
+    {
+        await Grid.EndEditAsync(); //Save the edited/added data to Grid
+    }
+}

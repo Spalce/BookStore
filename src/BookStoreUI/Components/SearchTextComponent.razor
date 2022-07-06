@@ -1,0 +1,15 @@
+﻿@typeparam TItem
+
+<SfTextBox Placeholder="Search Text" ShowClearButton="true" Autocomplete="AutoComplete.On" Input="OnInput"></SfTextBox>
+
+@code{
+    
+    [CascadingParameter]
+    public SfGrid<TItem> Grid { get; set; }
+    
+    public void OnInput(InputEventArgs args)
+    {
+        Grid.SearchAsync(args.Value);
+    }
+    
+}

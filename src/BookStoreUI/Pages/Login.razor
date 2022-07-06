@@ -1,0 +1,112 @@
+﻿@page "/login"
+@using System.Text
+@layout LoginLayout
+
+<div class="login-page">
+    <div class="login-box">
+        <div class="card card-outline card-primary">
+            <div class="card-header text-center">
+                <a href="/" class="h1">
+                    <b>Book</b>Store
+                </a>
+            </div>
+            <div class="card-body">
+            <p class="login-box-msg">Sign in to start your session</p>
+                <EditForm Model="Model" OnValidSubmit="Save">
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                    <div class="mb-3 text-danger">
+                        <ul>
+                            @foreach (var error in _serverSideErrors)
+                            {
+                                <li>@error</li>
+                            }
+                        </ul>
+                    </div>
+                    
+                    <ValidationMessage For="@(() => Model.Email)"/>
+                    <div class="input-group mb-3">
+                        <input type="text" @bind-value="Model.Email" class="form-control" placeholder="Email/Username">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-user"></span>
+                            </div>
+                        </div>
+                    </div>
+                                        
+                    <ValidationMessage For="@(() => Model.Password)"/>
+                    <div class="input-group mb-3">
+                        <input type="password" @bind-value="Model.Password" class="form-control" placeholder="Password">
+                        <div class="input-group-append">
+                            <div class="input-group-text">
+                                <span class="fas fa-lock"></span>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="icheck-primary">
+                                <input type="checkbox" @bind-value="Model.RememberMe" id="remember"/>
+                                <label for="remember">
+                                    Remember Me
+                                </label>
+                            </div>
+                        </div>
+                        <!-- /.col -->
+                        <div class="col-4">
+                            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                        </div>
+                        <!-- /.col -->
+                    </div>
+                </EditForm>
+                <p class="mb-0">
+                    <button type="button" @onclick="LoginPage" style="border: none; outline: none; background-color: white; color: #007bff;">Register a new membership</button>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ClaimsPrincipal _claimsPrincipal;
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private List<string> _serverSideErrors = new();
+    public LoginModel Model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _claimsPrincipal = (await AuthenticationStateTask).User;
+        if (_claimsPrincipal.Identity is {IsAuthenticated: true })
+        {
+            _navigationManager.NavigateTo("/");
+        }
+    }
+
+    private async Task Save()
+    {
+        _serverSideErrors.Clear();
+        string sendData = JsonConvert.SerializeObject(Model);
+        var content = new StringContent(sendData, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("accounts/login", content);
+        var readTask = await response.Content.ReadAsStringAsync();
+        var result = JsonConvert.DeserializeObject<RegistrationResponse>(readTask);
+        if (result is {Success: false })
+        {
+            _serverSideErrors = result.Errors;
+        }
+        else
+        {
+            _loginServices.Login(result!.Token);
+            await _js.InvokeVoidAsync("showToast", "Login was successful.", 5000, "success");
+            _navigationManager.NavigateTo("/", true);
+        }
+    }
+
+    private void LoginPage()
+    {
+        _navigationManager.NavigateTo("register");
+    }
+}

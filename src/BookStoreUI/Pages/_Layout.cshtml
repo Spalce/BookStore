@@ -1,0 +1,110 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@namespace BookStoreUI.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    @*<link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />*@
+	<!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons%7CMaterial+Icons+Outlined%7CMaterial+Icons+Two+Tone%7CMaterial+Icons+Round%7CMaterial+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="BookStoreUI.styles.css" rel="stylesheet" />
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="_content/Blazorized.AdminLte.Content/plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="_content/Blazorized.AdminLte.Content/dist/css/adminlte.min.css">
+    <link href="_content/Blazor.AdminLte.Site.Shared/css/site.css" rel="stylesheet" />
+    <!-- daterange picker -->
+    <link rel="stylesheet" href="_content/Blazorized.AdminLte.Content/plugins/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="css/icheck-bootstrap.min.css">
+    <!-- overlay scrollbars -->
+    <link type="text/css" href="_content/Blazorized.AdminLte.Content/plugins/overlayScrollbars/css/OverlayScrollbars.min.css" rel="stylesheet" />
+    <link href="_content/Syncfusion.Blazor.Themes/bootstrap4.css" rel="stylesheet" />
+    
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body class="hold-transition sidebar-mini sidebar-collapse">
+    <div id="components-reconnect-modal"></div>
+	<div class="wrapper">
+        @RenderBody()
+
+		<div id="blazor-error-ui">
+			<environment include="Staging,Production">
+				An error has occurred. This application may no longer respond until reloaded.
+			</environment>
+			<environment include="Development">
+				An unhandled exception has occurred. See browser dev tools for details.
+			</environment>
+			<a href="" class="reload">Reload</a>
+			<a class="dismiss">🗙</a>
+		</div>
+	</div>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="_framework/blazor.server.js"></script>
+
+	<!-- AdminLTE App -->
+	<script src="_content/Blazorized.AdminLte/js/interop.js"></script>
+	<script src="_content/Blazorized.AdminLte.Content/dist/js/adminlte.min.js"></script>
+	<script src="_content/Blazorized.AdminLte.Content/plugins/moment/moment-with-locales.js"></script>
+	<script src="_content/Blazorized.AdminLte.Content/plugins/daterangepicker/daterangepicker.js"></script>
+	<!-- overlay scrollbars -->
+	<script src="_content/Blazorized.AdminLte.Content/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+	<script >
+		function showToast(text, duration, alertInfo) {
+			var alerts = $(".alerts"),
+				body = $("body"),
+				alertClass = "",
+				alertIco = "info";
+			
+			if (!alerts.length) {
+				body.append('<div class="alerts"></div>');
+			}
+			$(".alert").remove();
+
+			if (alertInfo === "success") {
+				alertClass = "alert-success";
+				alertIco = "check";
+			} else if (alertInfo === "danger") {
+				alertClass = "alert-danger";
+				alertIco = "error";
+			} else if (alertInfo === "warning") {
+				alertClass = "alert-warning";
+				alertIco = "warning";
+			} else if (alertInfo === "default") {
+				alertClass = "alert-default";
+				alertIco = "info";
+			}
+
+			if (!$("." + alertClass + "").length) {
+				$(".alerts").append(
+				'<div class="alert ' +
+					alertClass +
+					'" data-duration-hide="' +
+					duration +
+					'"> <div class="alert-ico"> <i class="material-icons md-22">' +
+					alertIco +
+					'</i> </div> <div class="alert-text">' +
+					text +
+					"</div> </div>"
+				);
+
+				setTimeout(function() {
+					$("." + alertClass + "").remove();
+				}, duration);
+			}
+
+			$(document).on("click", ".alert-close", function() {
+				$(this)
+				.closest(".alert")
+				.remove();
+			});
+		}
+	</script>
+</body>
+</html>

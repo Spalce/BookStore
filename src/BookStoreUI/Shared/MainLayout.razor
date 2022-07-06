@@ -1,0 +1,163 @@
+﻿
+@inherits LayoutComponentBase
+<Microsoft.AspNetCore.Components.Web.PageTitle>Book Store</Microsoft.AspNetCore.Components.Web.PageTitle>
+@inject NavigationManager _navigationManager
+@inject IJSRuntime _js
+@inject ILayoutManager _layoutManager
+@inject NavBarLeftInjectableMenu _navBarLeftInjectableMenu
+                
+<NavBar>
+    <NavBarLeft>
+        @if (!_navBarLeftInjectableMenu.OverrideParentContent)
+        {
+            <NavBarMenuItem Link="/">Home</NavBarMenuItem>
+            
+            <NavBarMenuItem OnClick="HandleContent">Content</NavBarMenuItem><!-- defaults to # -->
+
+            <AuthorizeView>
+                <Authorized>
+                    @*<NavBarMenuItem Link="logout">Logout</NavBarMenuItem>*@
+                    <NavBarMenuItem OnClick="@(() => _navigationManager.NavigateTo("logout"))">Logout</NavBarMenuItem>
+                </Authorized>
+                <NotAuthorized>
+                    <NavBarMenuItem Link="account">Account</NavBarMenuItem>
+                </NotAuthorized>
+            </AuthorizeView>
+        }
+        @_navBarLeftInjectableMenu.content <!-- Injectable for custom menu content per page -->
+    </NavBarLeft>
+    <NavBarSearch></NavBarSearch>
+    <NavBarRight>
+        <NavBarDropDown>
+            <NavBarBadge Color="Color.Danger" Icon="fas fa-comments">4</NavBarBadge>
+            <NavBarDropDownMenu>
+                <NavBarDropDownMenuItem>
+                    <UserMessage DateTime="dt.AddMinutes(-2)" ProfilePicture="/dist/img/user7-128x128.jpg" Icon="fas fa-star">
+                        <UserName>Patricia Maundrell</UserName>
+                        <Message>Follow up</Message>
+                    </UserMessage>
+                </NavBarDropDownMenuItem>
+                <DropdownDivider />
+                <NavBarDropDownMenuItem>
+                    <UserMessage DateTime="dt.AddHours(-4)" ProfilePicture="/dist/img/user1-128x128.jpg" Icon="fas fa-star" IconColor="Color.Warning">
+                        <UserName>Brad Diesel</UserName>
+                        <Message>Call me whenever you can...</Message>
+                    </UserMessage>
+                </NavBarDropDownMenuItem>
+                <DropdownDivider />
+                <NavBarDropDownMenuItem>
+                    <UserMessage DateTime="dt.AddDays(-8)" ProfilePicture="/dist/img/user8-128x128.jpg" Icon="fas fa-star" IconColor="Color.Danger">
+                        <UserName>John Pierce</UserName>
+                        <Message>I got your message bro</Message>
+                    </UserMessage>
+                </NavBarDropDownMenuItem>
+                <DropdownDivider />
+                <NavBarDropDownMenuItem>
+                    <UserMessage DateTime="dt.AddDays(-31)" ProfilePicture="/dist/img/user3-128x128.jpg" Icon="fas fa-star">
+                        <UserName>Nora Silvester</UserName>
+                        <Message>The subject goes here</Message>
+                    </UserMessage>
+                </NavBarDropDownMenuItem>
+                <DropdownDivider />
+                <DropdownFooter OnClick="SeeAllMessages">See All Messages</DropdownFooter>
+            </NavBarDropDownMenu>
+        </NavBarDropDown>
+        <NavBarDropDown>
+            <NavBarBadge Color="Color.Warning" Icon="fas fa-bell">15</NavBarBadge>
+            <NavBarDropDownMenu>
+                <DropdownHeader>15 Notifications</DropdownHeader>
+                <DropdownDivider></DropdownDivider>
+                <NotificationMessage DateTime="dt.AddMinutes(-3)" Icon="fas fa-envelope mr-2">
+                    <Message>4 new messages</Message>
+                </NotificationMessage>
+                <DropdownDivider></DropdownDivider>
+                <NotificationMessage DateTime="dt.AddHours(-12)" Icon="fas fa-users mr-2">
+                    <Message>8 friend requests</Message>
+                </NotificationMessage>
+                <DropdownDivider></DropdownDivider>
+                <NotificationMessage DateTime="dt.AddDays(-2)" Icon="fas fa-file mr-2">
+                    <Message>3 new reports</Message>
+                </NotificationMessage>
+                <DropdownDivider></DropdownDivider>
+                <DropdownFooter OnClick="SeeAllNotifications">See All Notifications</DropdownFooter>
+            </NavBarDropDownMenu>
+        </NavBarDropDown>
+        <NavBarSideBarControl></NavBarSideBarControl>
+    </NavBarRight>
+</NavBar>
+<SideBarContainer>
+    <BrandLogo Link="/" Logo="/dist/img/AdminLTELogo.png">RhemaWalk</BrandLogo>
+    <SideBar>
+    <!-- Sidebar user panel (optional) -->
+    <SideBarUserPanel ImageEffect="ImageEffect.Circle"
+                      Link="userpage" Elevation="Elevation.Three"
+                      UserImage="/dist/img/avatar.png">
+        @($"{User!.FullName}")
+    </SideBarUserPanel>
+        <SideBarSearch></SideBarSearch>
+        <SideBarMenu>
+            <SideBarMenuItem Link="/" Icon="fas fa-list">
+                Books
+            </SideBarMenuItem>
+            <SideBarMenuItem Link="categories" Icon="fas fa-plus">
+                Catgories
+            </SideBarMenuItem>
+        </SideBarMenu>
+    </SideBar>
+</SideBarContainer>
+<ContentWrapper>
+    @Body
+</ContentWrapper>
+<ControlSideBar>Hello World!</ControlSideBar>
+<MainFooter>
+    <Default>
+        Copyright &copy; @DateTime.Now.Year <a href="https://rhemawalk.org">The Shepherds Outreach Metwork</a>. All rights reserved.
+    </Default>
+    <Right>
+        <a href="#!">Privacy</a> | <a href="#!">Terms & Conditions</a>
+    </Right>
+</MainFooter>
+@code {
+    public UserDetail User = new();
+    private ClaimsPrincipal _claimsPrincipal;
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        // content = null; for refreshing custom menu injectables per page.
+        // no override; reset default to show parent menu content items.
+        _claimsPrincipal = (await AuthenticationStateTask).User;
+        if (_claimsPrincipal.Identity is {IsAuthenticated: true })
+        {
+            User = await _loginServices.GetUserDetails();
+        }
+        StateHasChanged();
+    }
+
+    private DateTime dt = DateTime.Now;
+
+    private void SeeAllMessages(Tuple<IDropdownFooter, MouseEventArgs> args)
+    {
+        _navigationManager.NavigateTo("messages/see-all-messages");
+    }
+
+    private void HandleContent(Tuple<INavBarMenuItem, MouseEventArgs> args)
+    {
+        _navigationManager.NavigateTo("messages/see-all-messages");
+    }
+
+    private void SeeAllNotifications(Tuple<IDropdownFooter, MouseEventArgs> args)
+    {
+        _navigationManager.NavigateTo("messages/see-all-notifications");
+    }
+
+    protected override void OnAfterRender(bool isFirstRender)
+    {
+        _layoutManager.IsFooterFixed = true;
+        _layoutManager.IsNavBarFixed = true;
+        _layoutManager.IsSideBarFixed = true;
+        base.OnAfterRender(isFirstRender);
+    }
+}
