@@ -110,7 +110,7 @@ builder.Services.AddApiVersioning(options =>
 });
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ShepherdsWebApi", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "BookStoreApi", Version = "v1" });
     c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
     c.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
     {

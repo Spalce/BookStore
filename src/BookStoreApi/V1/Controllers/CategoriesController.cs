@@ -93,7 +93,7 @@ namespace BookStoreApi.V1.Controllers
 
             var response = await _service.AddAsync(model).ConfigureAwait(false);
 
-            return CreatedAtRoute(nameof(GetById), new { id = response.Id }, response);
+            return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
         }
 
         [HttpPut("{id}", Name = "UpdateCategory")]
